@@ -1,0 +1,13 @@
+# Python environments
+.venv/
+venv/
+__pycache__/
+
+# macOS junk files
+.DS_Store
+
+# Secrets and configs (just in case!)
+clouds.yaml
+*.env
+
+openstack_cli
