@@ -1,10 +1,4 @@
-import argparse
-import os
-import sys
-
 import openstack
-from openstack.config import loader
-
 openstack.enable_logging(debug = True)
 
 conn = openstack.connect(cloud='devstack') #: Via clouds.yaml file connection parameters
@@ -43,3 +37,20 @@ def delete_server(server_id: str):
     conn.compute.delete_server(server)
     print(f"Server with ID '{server_id}' deleted successfully.")
 
+def list_servers():
+    serversInDevStack = list(conn.compute.servers())
+    number_of_servers = len(serversInDevStack)
+    
+    data_servers = []
+    for server in serversInDevStack:
+      
+        flavor = conn.compute.get_flavor(server.flavor["id"])
+        data_servers.append({
+            "name": server.name,
+            "id": server.id,
+            "cpu": flavor.vcpus,
+            "memory": flavor.ram  
+        })
+    
+    print(f"Number of servers in DevStack: {number_of_servers}")
+    return serversInDevStack, data_servers, number_of_servers  # return server objects + data
