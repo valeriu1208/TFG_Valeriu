@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from pydantic import BaseModel
 import math
-from Decision_Algorithm import App
 from Resources import flavors,Images
 from ShouthBound_Interface.OpenStackConnection import create_server,list_servers
 from TFG_PythonQAgent import QuantumServer
@@ -21,24 +20,40 @@ serverQuantum = QuantumServer.TypeQ.server
 serverQuantum1 = QuantumServer.TypeQ.server1
 
 class AllocationAlgorithm:
-    def __init__(self):
-        server_list = list_servers()
-        self.server_DevStack = server_list[0]  # list of server objects
-        self.data_DevStack = {s["id"]: s for s in server_list[1]}  # dict keyed by server id
+    def __init__(self): 
         self.servers = [serverQuantum, serverQuantum1]
         
 
     def FirstFit(self, app):
-        
-        for server in self.server_DevStack:#check first the status of the Desvtack provisiong server, and then see if do the fit in quantum or legacy
+        server_list = list_servers()
+        self.server_DevStack = server_list[0]  # list of server objects
+        self.data_DevStack = {s["id"]: s for s in server_list[1]}  # dict keyed by server id
+        self.number_of_servers = server_list[2]
+
+        if self.number_of_servers == 0:# if server is empty, allocate directly
+            flavor = flavors.flavor2 if (app.cpu > 1 or app.memory > 1024) else flavors.flavor1
+            result = create_server(
+                name=app.service_name,
+                image_name=Images.image1.name,
+                flavor_name=flavor.name,
+                network_name="TFG"
+            )
+            if result is not None:
+                return {
+                    "status": "allocated",
+                    "type": "classical",
+                    "server_id": result
+                }
+            
+        for server in self.server_DevStack:#check first the status of the Desvtack provisiong server, and then go for legacy and then quantum
             server_data = self.data_DevStack.get(server.id)
             if server_data is None:
                 continue
-            has_cpu = server_data["cpu"] >= app.cpu
-            has_memory = server_data["memory"] >= app.memory
+            has_cpu = server_data["cpu"] >= app.cpu # change with gnocchi metrics / this makes no sense
+            has_memory = server_data["memory"] >= app.memory # change with gnocchi metrics / this makes no sense
 
             if has_cpu and has_memory:
-                # Decide flavor based on resource requirements
+                
                 if app.cpu > 1 or app.memory > 1024:
                     flavor = flavors.flavor2
                 else:
@@ -46,8 +61,8 @@ class AllocationAlgorithm:
 
                 result = create_server(
                     name=app.service_name,
-                    image_name=Images.image1,
-                    flavor_name=flavor,
+                    image_name=Images.image1.name,
+                    flavor_name=flavor.name,
                     network_name="TFG"
                 )
                 if result is not None:
@@ -56,6 +71,7 @@ class AllocationAlgorithm:
                         "type": "classical",
                         "server_id": result
                     }
+        raise HTTPException(status_code=400, detail="FNo suitable allocation found for the service.")
 def legacy_to_quantum(petition: LegacyService):
     ram_bytes = petition.memory * 1024 * 1024 * 1024
     bytes_per_amplitude = 16

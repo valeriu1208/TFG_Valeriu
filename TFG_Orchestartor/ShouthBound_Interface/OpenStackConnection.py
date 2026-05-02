@@ -39,18 +39,23 @@ def delete_server(server_id: str):
 
 def list_servers():
     serversInDevStack = list(conn.compute.servers())
-    number_of_servers = len(serversInDevStack)
-    
     data_servers = []
     for server in serversInDevStack:
       
-        flavor = conn.compute.get_flavor(server.flavor["id"])
+        flavor_info = server.flavor
+        if "vcpus" in flavor_info:
+            vcpus = flavor_info["vcpus"]
+            ram = flavor_info["ram"]
+        else:
+            flavot = conn.compute.get_flavor(server.flavor["id"])
+            vcpus = flavot.vcpus
+            ram = flavot.ram
         data_servers.append({
             "name": server.name,
             "id": server.id,
-            "cpu": flavor.vcpus,
-            "memory": flavor.ram  
+            "cpu": vcpus,
+            "memory": ram  
         })
     
-    print(f"Number of servers in DevStack: {number_of_servers}")
-    return serversInDevStack, data_servers, number_of_servers  # return server objects + data
+    print(f"Number of servers in DevStack: {len(serversInDevStack)}")
+    return serversInDevStack, data_servers, len(serversInDevStack)  # return server objects + data
