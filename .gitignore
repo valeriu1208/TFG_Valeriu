@@ -6,8 +6,9 @@ __pycache__/
 # macOS junk files
 .DS_Store
 
-# Secrets and configs (just in case!)
+
 clouds.yaml
 *.env
+.env
 
 openstack_cli

@@ -1,4 +1,7 @@
 # connected to dashboard
+import os
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 import uvicorn
@@ -86,14 +89,14 @@ def process_token():
                     "methods": ["password"],
                     "password": {
                         "user": {
-                            "id": "863ee14958964f9390caf0e336a17373",
-                            "password": "secret",
+                            "id": os.getenv("OPENSTACK_USER_ID"),
+                            "password": os.getenv("OPENSTACK_PASSWORD"),
                                 }
                                 }
                             },
                 "scope":{
                     "project": {
-                        "id": "c57b5416d49c4bac9fbd1b7a405da604"
+                        "id": os.getenv("OPENSTACK_PROJECT_ID")
                 }           
                 }
             }
