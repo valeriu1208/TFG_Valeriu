@@ -72,6 +72,19 @@ class AllocationAlgorithm:
                         "server_id": result
                     }
         raise HTTPException(status_code=400, detail="FNo suitable allocation found for the service.")
+class DeleteAlgorithm:
+    @staticmethod
+    def GetServerIdFromName(server_name: str):
+        servers_deployed = list_servers()
+        data_list = servers_deployed[1]  # [name, id, cpu, memory]
+        for server in data_list:
+            if server["name"] == server_name:
+                print(f"Server found: {server['name']}, ID: {server['id']}")
+                return server["id"]
+        
+        print(f"Server with name '{server_name}' not found.")
+        raise HTTPException(status_code=404, detail=f"Server with name '{server_name}' not found.")
+        
 def legacy_to_quantum(petition: LegacyService):
     ram_bytes = petition.memory * 1024 * 1024 * 1024
     bytes_per_amplitude = 16

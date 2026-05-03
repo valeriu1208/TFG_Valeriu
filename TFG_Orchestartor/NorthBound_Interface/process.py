@@ -6,7 +6,8 @@ from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 import uvicorn
 import requests
-from Decision_Algorithm.allocation import AllocationAlgorithm
+from Decision_Algorithm.allocation import AllocationAlgorithm, DeleteAlgorithm
+from ShouthBound_Interface.OpenStackConnection import create_server, delete_server, list_servers
 QUANTUM_AGENT_URL = "http://127.0.0.1:8001/legacy-to-quantum"  # URL of the quantum agent server legacy-to-quantum endpoint
 SERVER_URL = "http://127.0.0.1:8001/status"  # URL of the quantum agent server
 DEVSTACK_URL = "http://192.168.1.157/metric" # URL of the Gnocchi API for metrics
@@ -29,6 +30,7 @@ class processRequest(BaseModel):
 def process_request(request: LegacyService):
     #TODO: send request to fitting algorithm and process decision
     #TODO: inform dashboard about decision and status
+    #TODO: check if the name of the service is unique, if not, return error
     allocation = AllocationAlgorithm()
     allocation_algorithm = allocation.FirstFit(app=request)
     if allocation_algorithm is not None:
@@ -111,8 +113,15 @@ def process_token():
             print("Error retrieving token from Keystone:", e)
     raise HTTPException(status_code=500, detail="Error retrieving token from Keystone")
 
-
-
+@app.delete("/process/delete")
+def process_delete(server_name: str):
+    server_id = DeleteAlgorithm.GetServerIdFromName(server_name)
+    if server_id is None:
+        print({"status": "error", "message": f"Server with name '{server_name}' not found."})
+        raise HTTPException(status_code=404, detail=f"Server with name '{server_name}' not found.")
+    else:   
+        delete_server(server_id)
+        return {"status": "deleted", "server_name": server_name, "server_id": server_id}
 # send delete request to DeVstack to delete process
 # send delete request to quantum agent to delete process
 if __name__ == "__main__":
