@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from pydantic import BaseModel
 import math
-from Resources import flavors,Images
-from ShouthBound_Interface.OpenStackConnection import create_server,list_servers
+from Resources import flavors,Images, LegacyCluster
+from ShouthBound_Interface.OpenStackConnection import create_server,list_servers,get_available_resources_rack
 from TFG_PythonQAgent import QuantumServer
 
 class LegacyService(BaseModel):
@@ -27,51 +27,20 @@ class AllocationAlgorithm:
     def FirstFit(self, app):
         server_list = list_servers()
         self.server_DevStack = server_list[0]  # list of server objects
-        self.data_DevStack = {s["id"]: s for s in server_list[1]}  # dict keyed by server id
+        self.data_DevStack = {s["id"]: s for s in server_list[1]}  # :id, {name, id, cpu, memory}
         self.number_of_servers = server_list[2]
+        LegacyCluster.LegacyCluster1.refresh()
 
-        if self.number_of_servers == 0:# if server is empty, allocate directly
-            flavor = flavors.flavor2 if (app.cpu > 1 or app.memory > 1024) else flavors.flavor1
-            result = create_server(
-                name=app.service_name,
-                image_name=Images.image1.name,
-                flavor_name=flavor.name,
-                network_name="TFG"
-            )
-            if result is not None:
-                return {
-                    "status": "allocated",
-                    "type": "classical",
-                    "server_id": result
-                }
-            
-        for server in self.server_DevStack:#check first the status of the Desvtack provisiong server, and then go for legacy and then quantum
-            server_data = self.data_DevStack.get(server.id)
-            if server_data is None:
-                continue
-            has_cpu = server_data["cpu"] >= app.cpu # change with gnocchi metrics / this makes no sense
-            has_memory = server_data["memory"] >= app.memory # change with gnocchi metrics / this makes no sense
-
-            if has_cpu and has_memory:
-                
-                if app.cpu > 1 or app.memory > 1024:
-                    flavor = flavors.flavor2
-                else:
-                    flavor = flavors.flavor1
-
-                result = create_server(
-                    name=app.service_name,
-                    image_name=Images.image1.name,
-                    flavor_name=flavor.name,
-                    network_name="TFG"
-                )
-                if result is not None:
-                    return {
-                        "status": "allocated",
-                        "type": "classical",
-                        "server_id": result
-                    }
-        raise HTTPException(status_code=400, detail="FNo suitable allocation found for the service.")
+        candidates = []
+        for rack in LegacyCluster.LegacyCluster1.racks:
+            for node in rack.node:
+                candidates.append({
+                "node": node,
+                "rack": rack,
+                "free_vcpus": node.free_vcpus,
+                "free_memory": node.free_memory,
+                "free_disk": node.free_disk,
+                })
 class DeleteAlgorithm:
     @staticmethod
     def GetServerIdFromName(server_name: str):
