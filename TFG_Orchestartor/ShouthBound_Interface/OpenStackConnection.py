@@ -37,6 +37,7 @@ def delete_server(server_id: str):
 
     conn.compute.delete_server(server)
     print(f"Server with ID '{server_id}' deleted successfully.")
+    # call refresh?
 
 def list_servers():
     serversInDevStack = list(conn.compute.servers())
