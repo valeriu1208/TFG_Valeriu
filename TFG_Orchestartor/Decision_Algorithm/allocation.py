@@ -73,11 +73,6 @@ class AllocationAlgorithm:
                 return  {"status": "allocated", "type": "classical", "node": best_node["node"].hostname, "server_id": result, "number of vm deployed" : vm_deployed}
         raise HTTPException(status_code= 400 , detail = " No suitable allocation found, trying quantum (not implemented)")  
 
-
-    
-            
-        
- 
 class DeleteAlgorithm:
     @staticmethod
     def GetServerIdFromName(server_name: str):
