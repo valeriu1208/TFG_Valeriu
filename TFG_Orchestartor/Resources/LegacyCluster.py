@@ -10,8 +10,9 @@ class ServerNode:
         self.resources = {}
 
     def refresh(self):
-        self.resources = get_available_resources_rack()
-
+        data = get_available_resources_rack(self.rack_name)
+        self.resources = data.get(self.rack_name, {})
+    
     @property
     def free_vcpus(self):
         return self.resources.get("VCPU_total", 0) - self.resources.get("VCPU_used", 0)
@@ -23,6 +24,9 @@ class ServerNode:
     @property
     def free_disk(self):
         return self.resources.get("DISK_total", 0) - self.resources.get("DISK_used", 0)
+    @property
+    def vcpus(self):
+        return self.resources.get("VCPU_total", 0)
 
 class Rack:
     def __init__(self, name: str, az_name: str, nodes: list):
@@ -48,14 +52,14 @@ LegacyCluster1 = Cluster(
     racks=[
         Rack(
             name="polaar",
-            az_name="polaar",
+            az_name="rack1",
             nodes=[
                 ServerNode(name="controller", hostname="controller-node", az_name="polaar", rack_name="polaar"),
             ]
         ),
         Rack(
             name="m3node",
-            az_name="m3node",
+            az_name="rack2",
             nodes=[
                 ServerNode(name="compute", hostname="compute-node", az_name="m3node", rack_name="m3node"),
             ]

@@ -1,22 +1,25 @@
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 import uvicorn
-import math
 from QuantumServer import QuantumServer2, TypeQ
 from Decision_Algorithm.allocation import LegacyService, LegacytoQuantumRequest
-#: queue depending on resources, mainly by qubits, but also by circuit depth and shots
 app = FastAPI()
 
 server = TypeQ.server
 server1 = TypeQ.server1
+server2 = TypeQ.server2
 
 
 
 @app.get("/status")
 def get_status():
-    return {"available_resources": server.available_resources}
-def get_status1():
-    return {"available_resources": server1.available_resources}
+    save_status = server.available_resources
+    save1_status = server1.available_resources
+    save2_status = server.available_resources
+    total_qubits = save1_status[2] + save2_status[2] + save2_status[2]
+    return {"available_resources": total_qubits}
+
+
 
 @app.post("/release_resources")
 def release_resources(request: LegacytoQuantumRequest):

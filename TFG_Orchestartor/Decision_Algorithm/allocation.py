@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import math
 from Resources import flavors,Images,LegacyCluster
 from ShouthBound_Interface.OpenStackConnection import create_server,list_servers,get_available_resources_rack
-from TFG_PythonQAgent import QuantumServer
+
 
 class LegacyService(BaseModel):
     service_name: str
@@ -17,13 +17,9 @@ class LegacytoQuantumRequest(BaseModel):
     circuit_depth: int
     qstorage: int
 
-serverQuantum = QuantumServer.TypeQ.server
-serverQuantum1 = QuantumServer.TypeQ.server1
+
 
 class AllocationAlgorithm:
-    def __init__(self): 
-        self.servers = [serverQuantum, serverQuantum1]
-        
 
     def FirstFit(self, app):
         server_list = list_servers()
@@ -32,6 +28,7 @@ class AllocationAlgorithm:
         self.number_of_servers = server_list[2]
         LegacyCluster.LegacyCluster1.refresh()
         vm_deployed: int = 0
+
 
         candidates = []
         for rack in LegacyCluster.LegacyCluster1.racks:
@@ -43,20 +40,20 @@ class AllocationAlgorithm:
                 "free_memory": node.free_memory,
                 "free_disk": node.free_disk,
                 })
-        all_empty = all(c["free_vcpus"] == c["node"].total_vcpus for c in candidates)
+        all_empty = all(c["free_vcpus"] == c["node"].vcpus for c in candidates)
         if all_empty:
             target_node = candidates[0]
             result = create_server(
                 name = app.service_name,
                 image_name= Images.image1.name,
-                flavor_name= flavor.name,
+                flavor_name= flavors.flavor1.name,
                 network_name= "TFG",
                 az = target_node["rack"].az_name
             )
             if result:
                 vm_deployed= vm_deployed + 1 
                 return  {"status": "allocated", "type": "classical", "node": target_node["node"].hostname, "server_id": result}
-        # now, it shall be allocated to the node that has less resources ;;; Add memory checking, if its close to 80% of it's total stop allocating etc
+        # now, it shall be allocated to the node that has less resources, also check storage , as the second node is less powerful ;;; Add memory checking, if its close to 80% of it's total stop allocating etc
         suitable = [c for c in candidates
         if c["free_vcpus"] >= app.cpu and c["free_memory"] >= app.memory ] #keep only the available node
         if suitable:
@@ -64,7 +61,7 @@ class AllocationAlgorithm:
             result = create_server(
                 name = app.service_name,
                 image_name= Images.image1.name,
-                flavor_name= flavor.name,
+                flavor_name= flavors.flavor2.name,
                 network_name= "TFG",
                 az = best_node["rack"].az_name
             )

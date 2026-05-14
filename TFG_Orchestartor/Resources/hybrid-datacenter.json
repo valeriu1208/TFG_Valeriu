@@ -1,0 +1,134 @@
+{
+    "hibrid_DCN":{
+        "CLUSTER_LIST": [
+            {
+                "Legacy_Cluster":[{
+                    "rack":[{
+                                "rack1":{
+                                    "Server1":{
+                                        "id" : "polaar",
+                                        "cpu":"",
+                                        "memory_ram":"",
+                                        "storage": ""
+
+                                    }
+
+                                },
+                                "rack2":{
+                                    "Server2":{
+                                        "id" : "m3node",
+                                        "cpu":"",
+                                        "memory_ram":"",
+                                        "storage": ""
+                                        
+                                    }
+
+                                }
+                            }]
+                }]
+            },
+            {"Quantum_Cluster":[{
+                "Quantum_Agent1":{
+                    "Quantum_Rack":[{
+                        "Quantum_Computer1":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+
+                        },
+                        "Quantum_Computer2":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        },
+                        "Quantum_Computer3":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        }
+                    }]
+
+                },
+                "Quantum_Agent2":{
+                    "Quantum_Rack1":[{
+                        "Quantum_Computer4":
+                        {
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        },
+                        "Quantum_Computer5":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        },
+                        "Quantum_Computer6":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        },
+                        "Quantum_Computer7":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        }
+                    }]
+
+                },
+                "Quantum_Agent3":{
+                    "Quantum_Rack2":[{
+                        "Quantum_Computer8":
+                        {
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        },
+                        "Quantum_Computer9":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        },
+                        "Quantum_Computer10":{
+                            "host": "192.168.1.200", 
+                            "qbits" : 127, 
+                            "shots" :10000, 
+                            "circuit_depth" :  5000, 
+                            "qstorage" : "(127 * 10000 // 8)",
+                            "port": ""
+                        }
+                    }]
+
+                }
+
+            }]
+        }
+        ]
+    }
+}

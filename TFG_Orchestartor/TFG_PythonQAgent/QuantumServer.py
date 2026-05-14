@@ -1,3 +1,6 @@
+import os
+from dotenv import load_doten
+IP = os.getenv("IP")
 class QuantumServer2:
     def __init__(self, host: str, qbits: int, shots: int, circuit_depth: int, qstorage: int):
         self.host = host
@@ -19,14 +22,70 @@ class QuantumServer2:
         }
 class TypeQ():
     server = QuantumServer2(
-        host="192.168.1.200", 
+        host= IP, 
         qbits=127, 
         shots=10000, 
         circuit_depth=5000, 
         qstorage= (127 * 10000 // 8)
     )
     server1 = QuantumServer2(
-        host="192.168.1.201",
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server2 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server3 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server4 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server5 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server6 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server7 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server8 = QuantumServer2(
+        host=IP,
+        qbits=127,
+        shots=10000,
+        circuit_depth=5000,
+        qstorage=(127 * 10000 // 8)
+    )
+    server9 = QuantumServer2(
+        host=IP,
         qbits=127,
         shots=10000,
         circuit_depth=5000,
