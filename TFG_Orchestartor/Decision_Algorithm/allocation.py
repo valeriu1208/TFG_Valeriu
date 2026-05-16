@@ -87,7 +87,7 @@ class AllocationAlgorithm:
                     and c ["available_circuit_depth"] >= requested_resources["circuit_depth"]]
         if suitable:
             best_agent = sorted(suitable, key = lambda c: (c["available_qbits"], c["available_shots"], c["available_circuit_depth"]), reverse= True)[0]
-            result = create_quantum_server(best_agent["agent"],requested_resources)
+            result = create_quantum_server(best_agent["agent"],best_agent["server"],requested_resources)
             return result
 class DeleteAlgorithm:
     @staticmethod
@@ -122,22 +122,30 @@ def legacy_to_quantum(petition: LegacyService):
             qstorage=qstorage
         )
     return requested_resources
-def create_quantum_server(agent ,request: LegacytoQuantumRequest):# change
-    available_resources = 1
-    if (request.qbits > available_resources["qbits"] or
-        request.shots > available_resources["shots"] or
-        request.circuit_depth > available_resources["circuit_depth"] or
-        request.qstorage > available_resources["qstorage"]):
+def create_quantum_server(agent ,server, request: LegacytoQuantumRequest):# change
+    if (request.qbits > server.available_qbits or
+        request.shots > server.available_shots or
+        request.circuit_depth > server.available_circuit_depth or
+        request.qstorage > server.available_qstorage):
         raise HTTPException(status_code=400, detail="Requested resources exceed available resources")
-    else:
-        available_resources["qbits"] -= request.qbits
-        available_resources["circuit_depth"] -= request.circuit_depth
-        available_resources["qstorage"] -= request.qstorage
-        return {"message": "Quantum server created successfully", "remaining_resources": available_resources}
-
-
-
-
+    
+    server.resources["qbits"] -= request.qbits
+    server.resources["circuit_depth"] -= request.circuit_depth
+    server.resources["shots"] -= request.shots
+    server.resources["qstorage"] -= request.qstorage
+    
+    return {
+        "status": "allocated",
+        "type": "quantum",
+        "agent": agent.name,
+        "server": server.name,
+        "available_resources" : {
+            "qbits": server.available_qbits,
+            "circuit_depth": server.available_circuit_depth,
+            "shots": server.available_shots,
+            "qstorage": server.available_qshots
+        }
+    }
 
 
 
