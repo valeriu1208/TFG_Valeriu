@@ -1,9 +1,8 @@
 from fastapi import HTTPException
 from pydantic import BaseModel
-import requests
 import math
 from Resources import flavors,Images,LegacyCluster, QuantumCLuster
-from ShouthBound_Interface.OpenStackConnection import create_server,list_servers,get_available_resources_rack
+from ShouthBound_Interface.OpenStackConnection import create_server,list_servers
 
 
 class LegacyService(BaseModel):
@@ -11,13 +10,13 @@ class LegacyService(BaseModel):
     cpu: int
     memory: int
     storage: int
-    execution_time: int
+   # execution_time: int
 class LegacytoQuantumRequest(BaseModel):
     qbits: int
     shots: int
     circuit_depth: int
     qstorage: int
-    execution_time: int
+   # execution_time: int
 
 class AllocationAlgorithm:
 
@@ -56,7 +55,7 @@ class AllocationAlgorithm:
                 return  {"status": "allocated", "type": "classical", "node": target_node["node"].hostname, "server_id": result}
         # now, it shall be allocated to the node that has less resources, also check storage , as the second node is less powerful ;;; Add memory checking, if its close to 80% of it's total stop allocating etc
         suitable = [c for c in candidates
-        if c["free_vcpus"] >= app.cpu and c["free_memory"] >= app.memory ] #keep only the available node
+        if c["free_vcpus"] >= app.cpu and c["free_memory"] >= app.memory and c["free_disk"] >= app.storage ] #keep only the available node
         if suitable:
             best_node = sorted(suitable, key=lambda c: (c["free_vcpus"], c["free_memory"]), reverse=True)[0]
             result = create_server(
@@ -69,23 +68,27 @@ class AllocationAlgorithm:
             if result:
                 vm_deployed = vm_deployed + 1
                 return  {"status": "allocated", "type": "classical", "node": best_node["node"].hostname, "server_id": result, "number of vm deployed" : vm_deployed}
+
         requested_resources = legacy_to_quantum(app)
         QuantumCandidates = []
         for agent in QuantumCLuster.Quantum_Cluster1.agent:
-            QuantumCandidates.append({
-            "agent" :agent,
-            "available_circuit_depth": agent.available_circuit_depth,
-            "available_qbits" :agent.available_qbits,
-            "available_shots" :agent.available_shots,
-            "available_qstorage": agent.available_qstorage
-            })
+            for server in agent.rack:
+                QuantumCandidates.append({
+                "agent" :agent,
+                "server" :server,
+                "available_circuit_depth" :server.available_circuit_depth,
+                "available_qbits" :server.available_qbits,
+                "available_shots" :server.available_shots,
+                "available_qstorage":server.available_qstorage
+                })
         suitable = [c for c in QuantumCandidates
-                    if c["available_qubits"] >= requested_resources["qbits"]
+                    if c["available_qbits"] >= requested_resources["qbits"]
                     and c["available_shots"] >= requested_resources["shots"]
-                    and c ["available_circuit_"] >= requested_resources["circuit_depth"]]
+                    and c ["available_circuit_depth"] >= requested_resources["circuit_depth"]]
         if suitable:
-            result = create_quantum_server(requested_resources)
-
+            best_agent = sorted(suitable, key = lambda c: (c["available_qbits"], c["available_shots"], c["available_circuit_depth"]), reverse= True)[0]
+            result = create_quantum_server(best_agent["agent"],requested_resources)
+            return result
 class DeleteAlgorithm:
     @staticmethod
     def GetServerIdFromName(server_name: str):
@@ -119,8 +122,7 @@ def legacy_to_quantum(petition: LegacyService):
             qstorage=qstorage
         )
     return requested_resources
-def create_quantum_server(request: LegacytoQuantumRequest):# change
-
+def create_quantum_server(agent ,request: LegacytoQuantumRequest):# change
     available_resources = 1
     if (request.qbits > available_resources["qbits"] or
         request.shots > available_resources["shots"] or

@@ -125,4 +125,4 @@ def process_delete(server_name: str):
 # send delete request to DeVstack to delete process
 # send delete request to quantum agent to delete process
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

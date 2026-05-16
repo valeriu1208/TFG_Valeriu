@@ -1,21 +1,21 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+import uvicorn
 from TFG_QSERVER.QuantumServer import TypeQ
-app = FastAPI
 
-server4 = TypeQ.server3
-server5 = TypeQ.server4
-server6 = TypeQ.server5
-server7 = TypeQ.server6
+app = FastAPI()
 
+AGENT_SERVERS = {
+    2: {"Quantum_Computer4": TypeQ.server3, "Quantum_Computer5": TypeQ.server4, "Quantum_Computer6": TypeQ.server5, "Quantum_Computer7" : TypeQ.server6}
+}
 
 @app.get("/status")
 def get_status():
-    save_status = server4.available_resources
-    save1_status = server5.available_resources
-    save2_status = server6.available_resources
-    save3_status = server7.available_resources
-    total_qubits = save_status["qbits"] + save1_status["qbits"] + save2_status["qbits"] + save3_status["qbits"]
     result = {
-        "available_resources": total_qubits
-        }
+        name: s.available_resources
+        for name, s in AGENT_SERVERS[2].items()
+    }
     return result
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8002)

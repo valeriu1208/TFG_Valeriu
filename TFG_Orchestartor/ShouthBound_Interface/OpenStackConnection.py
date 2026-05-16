@@ -71,7 +71,7 @@ def get_available_resources_rack(name_rack: str = None):# either polaar or m3nod
     for j in response["resource_providers"]:
         uuid = j["uuid"]
         name = j["name"]
-        if name_rack and name_rack !=name_rack:
+        if name_rack and name_rack !=name:
             continue
         max = conn.session.get(f"{placement_url}/resource_providers/{uuid}/inventories").json().get("inventories",{})
         usage = conn.session.get(f"{placement_url}/resource_providers/{uuid}/usages").json().get("usages",{})

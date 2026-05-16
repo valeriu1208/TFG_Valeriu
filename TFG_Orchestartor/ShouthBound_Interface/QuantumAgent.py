@@ -1,24 +1,19 @@
-from fastapi import FastAPI,HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI
 import uvicorn
 from TFG_QSERVER.QuantumServer import TypeQ
-from Decision_Algorithm.allocation import LegacyService, LegacytoQuantumRequest
+
 app = FastAPI()
 
-server = TypeQ.server
-server1 = TypeQ.server1
-server2 = TypeQ.server2
-
+AGENT_Servers = {
+    1: {"Quantum_Computer1": TypeQ.server, "Quantum_Computer2": TypeQ.server1, "Quantum_Computer3": TypeQ.server2}
+}
 
 @app.get("/status")
 def get_status():
-    save_status = server.available_resources
-    save1_status = server1.available_resources
-    save2_status = server.available_resources
-    total_qubits = save_status["qbits"] + save1_status["qbits"] + save2_status["qbits"]
     result =  {
-            "available_resources": total_qubits
-            }
+        name: s.available_resources
+        for name, s in AGENT_Servers[1].items()
+    }
     return result
 
 
