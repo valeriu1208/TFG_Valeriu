@@ -1,5 +1,6 @@
 import os
-from dotenv import load_doten
+from dotenv import load_dotenv
+load_dotenv()
 IP = os.getenv("IP")
 class QuantumServer2:
     def __init__(self, host: str, qbits: int, shots: int, circuit_depth: int, qstorage: int):

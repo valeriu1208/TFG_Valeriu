@@ -28,7 +28,7 @@
                 }]
             },
             {"Quantum_Cluster":[{
-                "Quantum_Agent1":{
+                "Quantum_Agent":{
                     "Quantum_Rack":[{
                         "Quantum_Computer1":{
                             "host": "192.168.1.200", 
@@ -58,7 +58,7 @@
                     }]
 
                 },
-                "Quantum_Agent2":{
+                "Quantum_Agent1":{
                     "Quantum_Rack1":[{
                         "Quantum_Computer4":
                         {
@@ -96,7 +96,7 @@
                     }]
 
                 },
-                "Quantum_Agent3":{
+                "Quantum_Agent2":{
                     "Quantum_Rack2":[{
                         "Quantum_Computer8":
                         {

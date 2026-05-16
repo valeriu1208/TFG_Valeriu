@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import uvicorn
 import requests
 from Decision_Algorithm.allocation import AllocationAlgorithm, DeleteAlgorithm
-from ShouthBound_Interface.OpenStackConnection import create_server, delete_server, list_servers
+from ShouthBound_Interface.OpenStackConnection import  delete_server
 QUANTUM_AGENT_URL = "http://127.0.0.1:8001/legacy-to-quantum"  # URL of the quantum agent server legacy-to-quantum endpoint
 SERVER_URL = "http://127.0.0.1:8001/status"  # URL of the quantum agent server
 DEVSTACK_URL = "http://192.168.1.157/metric" # URL of the Gnocchi API for metrics

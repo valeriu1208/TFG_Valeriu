@@ -5,4 +5,4 @@ class Application:
         self.cpu = cpu
         self.memory = ram
         self.storage = storage
-        #self.execution_time = execution_time
+        self.execution_time = execution_time
