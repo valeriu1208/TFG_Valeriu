@@ -177,12 +177,20 @@ def create_quantum_server(agent ,server, request: LegacytoQuantumRequest):
         "type": "quantum",
         "agent": agent.name,
         "server": server.name,
+        "app_name": request.service_name,
         "available_resources" : {
             "qbits": server.available_qbits,
             "circuit_depth": server.available_circuit_depth,
             "shots": server.available_shots,
             "qstorage": server.available_qstorage
-        }
+        },
+        "requested_resources": {
+            "qbits": request.qbits,
+            "circuit_depth": request.circuit_depth,
+            "shots": request.shots,
+            "qstorage": request.qstorage
+        },
+        "total_deployed": total_deployed
     }
 
 
