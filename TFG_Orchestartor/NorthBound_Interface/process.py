@@ -2,20 +2,27 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()  # Load environment variables from .env file
+from contextlib import asynccontextmanager
 from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 import uvicorn
 import requests
-from Decision_Algorithm.allocation import AllocationAlgorithm, DeleteAlgorithm,quantum_list
+from Decision_Algorithm.allocation import AllocationAlgorithm, DeleteAlgorithm, quantum_list
+from Resources import QuantumCLuster
 from ShouthBound_Interface.OpenStackConnection import  delete_server
-from ShouthBound_Interface import QuantumAgent,QuantumAgent1,QuantumAgent2
 QUANTUM_AGENT_URL = "http://127.0.0.1:8001/legacy-to-quantum"  # URL of the quantum agent server legacy-to-quantum endpoint
 SERVER_URL = "http://127.0.0.1:8001/status"  # URL of the quantum agent server
 DEVSTACK_URL = "http://192.168.1.157/metric" # URL of the Gnocchi API for metrics
 KEYSTONE_URL = "http://192.168.1.157/identity/v3/auth/tokens" # URL of the Keystone API for authentication
 DELETE_URL = "http://192.168.1.157/"
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    QuantumCLuster.Quantum_Cluster1.refresh()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 class LegacyService(BaseModel):
     service_name: str
@@ -27,6 +34,8 @@ class LegacyService(BaseModel):
 
 class processRequest(BaseModel):
     legacy_service: LegacyService
+
+
     
 @app.post("/process")
 def process_request(request: LegacyService):
@@ -126,7 +135,11 @@ def process_delete(server_name: str):
             delete_server(server_id)
             return {"status": "deleted", "server_name": server_name, "server_id": server_id}
     else:
-        return DeleteAlgorithm.DeleteQuantum(server_name)
+        trigger = DeleteAlgorithm.DeleteQuantum(server_name)
+        if trigger["status"] == "released":
+            return  {"status": "deleted", "server_name": server_name}
+        else:
+            raise HTTPException(status_code=404,detail=f"Server with name '{server_name}' not found.") 
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

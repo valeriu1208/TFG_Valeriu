@@ -31,7 +31,7 @@ class AllocationAlgorithm:
         #self.number_of_servers = server_list[2]
         global total_deployed
         LegacyCluster.LegacyCluster1.refresh()
-        QuantumCLuster.Quantum_Cluster1.refresh()
+        #QuantumCLuster.Quantum_Cluster1.refresh()
 
         if not app.force_quantum:
             candidates = []
@@ -121,13 +121,14 @@ class DeleteAlgorithm:
         server.resources["circuit_depth"] += resources["circuit_depth"]
         server.resources["qstorage"] += resources["qstorage"]
         total_deployed -= 1
-        return {
+        result =  {
             "status": "released",
             "type": "quantum",
             "service_name": service_name,
             "agent": record["agent"].name,
             "server": server.name
         }
+        return result
 def legacy_to_quantum(petition: LegacyService):
     ram_bytes = petition.memory * 1024 * 1024 * 1024
     bytes_per_amplitude = 16
@@ -159,11 +160,11 @@ def create_quantum_server(agent ,server, request: LegacytoQuantumRequest):
         "agent": agent,
         "app_service_name": request.service_name,
         "server": server,
-        "resource":{
+        "resources":{
             "qbits": request.qbits,
             "circuit_depth": request.circuit_depth,
             "shots": request.shots,
-            "quantum storage": request.qstorage
+            "qstorage": request.qstorage
         }
        
     }
@@ -178,12 +179,12 @@ def create_quantum_server(agent ,server, request: LegacytoQuantumRequest):
         "agent": agent.name,
         "server": server.name,
         "app_name": request.service_name,
-        "available_resources" : {
-            "qbits": server.available_qbits,
-            "circuit_depth": server.available_circuit_depth,
-            "shots": server.available_shots,
-            "qstorage": server.available_qstorage
-        },
+        #"available_resources" : {
+         #   "qbits": server.available_qbits,
+          #  "circuit_depth": server.available_circuit_depth,
+           # "shots": server.available_shots,
+            #"qstorage": server.available_qstorage
+        #},
         "requested_resources": {
             "qbits": request.qbits,
             "circuit_depth": request.circuit_depth,
