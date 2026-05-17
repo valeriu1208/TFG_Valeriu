@@ -6,8 +6,9 @@ from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 import uvicorn
 import requests
-from Decision_Algorithm.allocation import AllocationAlgorithm, DeleteAlgorithm
+from Decision_Algorithm.allocation import AllocationAlgorithm, DeleteAlgorithm,quantum_list
 from ShouthBound_Interface.OpenStackConnection import  delete_server
+from ShouthBound_Interface import QuantumAgent,QuantumAgent1,QuantumAgent2
 QUANTUM_AGENT_URL = "http://127.0.0.1:8001/legacy-to-quantum"  # URL of the quantum agent server legacy-to-quantum endpoint
 SERVER_URL = "http://127.0.0.1:8001/status"  # URL of the quantum agent server
 DEVSTACK_URL = "http://192.168.1.157/metric" # URL of the Gnocchi API for metrics
@@ -21,7 +22,8 @@ class LegacyService(BaseModel):
     cpu: int
     memory: int
     storage: int
-    execution_time: int
+    #execution_time: int
+    force_quantum: bool = False
 
 class processRequest(BaseModel):
     legacy_service: LegacyService
@@ -115,14 +117,16 @@ def process_token():
 
 @app.delete("/process/delete")
 def process_delete(server_name: str):
-    server_id = DeleteAlgorithm.GetServerIdFromName(server_name)
-    if server_id is None:
-        print({"status": "error", "message": f"Server with name '{server_name}' not found."})
-        raise HTTPException(status_code=404, detail=f"Server with name '{server_name}' not found.")
-    else:   
-        delete_server(server_id)
-        return {"status": "deleted", "server_name": server_name, "server_id": server_id}
-# send delete request to DeVstack to delete process
-# send delete request to quantum agent to delete process
+    if server_name not in quantum_list:
+        server_id = DeleteAlgorithm.GetServerIdFromName(server_name)
+        if server_id is None:
+            print({"status": "error", "message": f"Server with name '{server_name}' not found."})
+            raise HTTPException(status_code=404, detail=f"Server with name '{server_name}' not found.")
+        else:
+            delete_server(server_id)
+            return {"status": "deleted", "server_name": server_name, "server_id": server_id}
+    else:
+        return DeleteAlgorithm.DeleteQuantum(server_name)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,3 +1,4 @@
+
 class FLavors:
     
     def __init__(self,id: str,name: str, cpu: int, ram: int, disk: int):
