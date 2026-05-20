@@ -6,13 +6,14 @@ from ShouthBound_Interface.OpenStackConnection import create_server,list_servers
 
 quantum_list: dict =  {}
 total_deployed = 0
+LONG_JOB_THRESHOLD = 3600  # seconds, example threshold for long-running jobs
 class LegacyService(BaseModel):
     service_name: str
     cpu: int
     memory: int
     storage: int
     force_quantum: bool = False
-   # execution_time: int
+    execution_time: int
 class LegacytoQuantumRequest(BaseModel):
     service_name: str
     #id: int
@@ -20,11 +21,78 @@ class LegacytoQuantumRequest(BaseModel):
     shots: int
     circuit_depth: int
     qstorage: int
-   # execution_time: int
+    execution_time: int
 
 class AllocationAlgorithm:
 
     def FirstFit(self, app):
+        global total_deployed
+        LegacyCluster.LegacyCluster1.refresh()
+        if not app.force_quantum:
+            candidates = []
+            for rack in LegacyCluster.LegacyCluster1.racks:
+                for node in rack.nodes:
+                    candidates.append({
+                    "node": node,
+                    "rack": rack,
+                    "free_vcpus": node.free_vcpus,
+                    "free_memory": node.free_memory,
+                    "free_disk": node.free_disk,
+                    })
+            all_empty = all(c["free_vcpus"] == c["node"].vcpus for c in candidates)
+            if all_empty:
+                target_node = candidates[0]
+                result = create_server(
+                    name = app.service_name,
+                    image_name= Images.image1.name,
+                    flavor_name= flavors.flavor1.name,
+                    network_name= "TFG",
+                    az = target_node["rack"].az_name
+                )
+                if result:
+                    total_deployed+=1
+                    return  {"status": "allocated", "type": "classical", "node": target_node["node"].hostname, "server_id": result, "number of deploymetns": total_deployed}
+            suitable = [c for c in candidates
+            if c["free_vcpus"] >= app.cpu and c["free_memory"] >= app.memory and c["free_disk"] >= app.storage ] #keep only the available node
+            if suitable:
+                best_node = suitable[0]
+                result = create_server(
+                    name = app.service_name,
+                    image_name= Images.image1.name,
+                    flavor_name= flavors.flavor2.name,
+                    network_name= "TFG",
+                    az = best_node["rack"].az_name
+                )
+                if result:
+                    total_deployed +=1
+                    return  {"status": "allocated", "type": "classical", "node": best_node["node"].hostname, "server_id": result, "number of vm deployed" : total_deployed}
+
+        requested_resources = legacy_to_quantum(app)
+        QuantumCandidates = []
+        for agent in QuantumCLuster.Quantum_Cluster1.agent:
+            for server in agent.rack:
+                QuantumCandidates.append({
+                "agent" :agent,
+                "server" :server,
+                "available_circuit_depth" :server.available_circuit_depth,
+                "available_qbits" :server.available_qbits,
+                "available_shots" :server.available_shots,
+                "available_qstorage":server.available_qstorage
+                })
+        suitable = [c for c in QuantumCandidates
+                    if c["available_qbits"] >= requested_resources.qbits
+                    and c["available_shots"] >= requested_resources.shots
+                    and c ["available_circuit_depth"] >= requested_resources.circuit_depth
+                    and c ["available_qstorage"] >= requested_resources.qstorage]
+        if suitable:
+            best_agent = suitable[0]
+            result = create_quantum_server(best_agent["agent"],best_agent["server"],requested_resources)
+            total_deployed +=1
+            return result
+        
+    def LoadBalancing(self, app):
+        1 = 1    
+    def SpreadFit(self, app):
         #server_list = list_servers()
         #self.server_DevStack = server_list[0]  # list of server objects
         #self.data_DevStack = {s["id"]: s for s in server_list[1]}  # :id, {name, id, cpu, memory}
@@ -193,8 +261,22 @@ def create_quantum_server(agent ,server, request: LegacytoQuantumRequest):
         },
         "total_deployed": total_deployed
     }
+class Pick_flavor:
+    def PickFlavor(app):
+        available_flavors = [
+            flavors.flavor1,
+            flavors.flavor2,
+            flavors.flavor3,
+            flavors.flavor4,
+            flavors.flavor5
+        ]
+        suitable_flavor = [i for i in available_flavors if i.cpu>= app.cpu and i.ram >= app.memory and i.disk >= app.storage]
+        if not suitable_flavor:
+            return None
+        fitting = sorted(suitable_flavor,key = lambda c:(c.cpu, c.ram, c.disk))
+        if hasattr(app, 'execution_time') and app.execution_time > LONG_JOB_THRESHOLD:
+            if len(fitting) > 1:
+                return fitting[1]   # next size up for long jobs
 
-
-
-
+        return fitting[0]  
    
